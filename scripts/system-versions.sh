@@ -31,9 +31,7 @@ ls -ld /usr/local/cuda* 2>/dev/null || true
 
 echo
 echo "===== CUDA LIBRARIES ====="
-ldconfig -p | grep -E \
-  'libcuda\.so|libcudart\.so|libcublas\.so|libnvrtc\.so' \
-  | head -30
+/usr/sbin/ldconfig -p | grep -E 'libcuda\.so|libcudart\.so|libcublas\.so|libnvrtc\.so' | head -30
 
 echo
 echo "===== COMPILER ====="
