@@ -2,6 +2,16 @@
 
 A personal collection of notes, scripts, and reproducible setup guides for building and experimenting with a local AI system on Debian and NVIDIA hardware.
 
+## Hardware
+
+The documented setup is based on the following workstation configuration:
+
+- **Mainboard:** ASUS Pro WS WRX90E-SAGE SE
+- **CPU:** AMD Ryzen™ Threadripper™ PRO 7975WX
+- **Memory:** 8 × ADATA 32 GB DDR5-5600 ECC RDIMM, 256 GB total
+- **GPU:** 2 × NVIDIA RTX PRO 6000 Blackwell, 96 GB VRAM each
+- **Storage:** Samsung 9100 PRO 8 TB M.2 NVMe SSD, PCIe 5.0
+
 ## Contents
 
 - [`base-system.md`](base-system.md) – Debian 13 base installation, system preparation, NVIDIA drivers, and CUDA setup
