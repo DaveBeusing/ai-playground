@@ -1,43 +1,68 @@
-## Setup a TensorRT-LLM enviroment
-check if the base system is set up correctly
+# Install TensortRT LLM
+setup a TensorRT-LLM enviroment
+
+## check if the base system is set up correctly
+```
 nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
+```
 
-# Install dependencies
+## install dependencies
+```
 sudo apt install -y ninja-build python3 python3-dev python3-pip python3-venv pkg-config
+```
 
-# Set up paths
+## set up paths
+```
 mkdir -p ~/ai/{src,venv,models,engines,cache,configs,logs,scripts,benchmarks}
+```
 
-# Set up Python virtual enviroment
+## set up Python virtual enviroment
+```
 python3 -m venv ~/ai/venv/trtllm
+```
 
-# Activate the Python venv
+## activate the Python venv
+```
 source ~/ai/venv/trtllm/bin/activate
+```
 
-# Update Python pip
+## update Python pip
+```
 pip install --upgrade pip wheel setuptools build packaging
+```
 
-# Set up CUDA vars
+## set up CUDA vars
+```
 nano ~/.bashrc
+```
 
 at the end should be already
-># NVIDIA CUDA
->export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
->export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+```
+# NVIDIA CUDA
+export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+```
 add
+```
 export CUDA_HOME=/usr/local/cuda
 export HF_HOME=$HOME/ai/cache
-
+```
+## load Paths
+```
 source ~/.bashrc
+```
 
-# Prepare TensorRT-LLM install
+## prepare TensorRT-LLM install
+```
 cd ~/ai/scripts
 wget https://raw.githubusercontent.com/DaveBeusing/ai-playground/refs/heads/main/scripts/system-versions.sh
 chmod +x ~/ai/scripts/system-versions.sh
 ~/ai/scripts/system-versions.sh | tee ~/ai/logs/system-versions.txt
+```
 
-
-# Check if build essentials are installed
+## check if build essentials are installed
+(needs to be consolidated into one command)
+```
 sudo apt install -y \
   build-essential \
   gcc \
@@ -80,18 +105,25 @@ sudo apt install -y libucx0 libucx-dev ucx-utils
 sudo apt install -y \
   libnccl2=2.30.7-1+cuda13.3 \
   libnccl-dev=2.30.7-1+cuda13.3
+```
 
+```
 sudo ldconfig
-
 git lfs install
+```
 
-# Set up Build venv
+## set up Build venv
+```
 python3 -m venv ~/ai/venv/tensorrt-llm
+```
 
-# Activate Build venv
+## activate Build venv
+```
 source ~/ai/venv/tensorrt-llm/bin/activate
+```
 
-# Set CUDA paths for venv
+## set CUDA paths for venv
+```
 cat >> ~/ai/venv/tensorrt-llm/bin/activate <<'EOF'
 export CUDA_HOME=/usr/local/cuda
 export CUDACXX="$CUDA_HOME/bin/nvcc"
@@ -101,38 +133,53 @@ export HF_HOME="$HOME/ai/cache/huggingface"
 export TRANSFORMERS_CACHE="$HF_HOME"
 export CCACHE_DIR="$HOME/ai/cache/ccache"
 EOF
+```
 
-# Reload the venv
+## reload the venv
+```
 deactivate
 source ~/ai/venv/tensorrt-llm/bin/activate
+```
 
-# Clone TensorRT-LLM
+
+## clone TensorRT-LLM
+```
 cd ~/ai/src
 git clone https://github.com/NVIDIA/TensorRT-LLM.git
 cd ~/ai/src/TensorRT-LLM
 git submodule update --init --recursive
 git lfs pull
+```
 
-# Don't build on main check for last release
+## Don't build on main check for last release
+```
 git fetch --tags
 git tag --sort=-version:refname | head -20
 git describe --tags --always
+```
 >> v1.3.0rc21-263-ga8b540912c
+```
 git checkout v1.3.0rc21-263-ga8b540912c
 git submodule update --init --recursive
 git lfs pull
+```
 
-# Install TensorRT
+## install TensorRT
+```
 python -m pip install --extra-index-url https://pypi.nvidia.com tensorrt==11.1.0.106
+```
 
-# Check TensorRT install
+## check TensorRT install
+```
 python - <<'PY'
 import tensorrt as trt
 print("TensorRT:", trt.__version__)
 PY
+```
 >>TensorRT: 11.1.0.106
 
-# Get recommended PyTorch version
+## get recommended PyTorch version
+```
 grep -R \
   -E '"torch|torch[<>=~!]' \
   pyproject.toml \
@@ -140,23 +187,31 @@ grep -R \
   setup.cfg \
   requirements* \
   2>/dev/null | head -100
+```
 >>requirements.txt:torch>=2.11.0,<=2.13.0a0
 
-# pinpoint Repo state
+## pinpoint Repo state
+```
 git status
 git rev-parse HEAD
 git submodule status
 git rev-parse HEAD > ~/ai/logs/tensorrt-llm-build-commit.txt
 git submodule status > ~/ai/logs/tensorrt-llm-build-submodules.txt
+```
 
-# check which PyTorch pip would like to install
+## check which PyTorch pip would like to install
+```
 python -m pip install --dry-run -r requirements.txt 2>&1 | tee ~/ai/logs/requirements-dry-run.log
 grep -Ei 'torch|cuda|nvidia-' ~/ai/logs/requirements-dry-run.log
+```
 
-# Install requierements
+## install requirements
+```
 python -m pip install -r requirements.txt 2>&1 | tee ~/ai/logs/requirements-install.log
+```
 
-# Check PyTorch install
+## check PyTorch install
+```
 python - <<'PY'
 import sys
 import torch
@@ -186,31 +241,38 @@ python - <<'PY' > ~/ai/logs/pytorch-abi.txt
 import torch
 print(int(torch.compiled_with_cxx11_abi()))
 PY
-
+```
+```
 python -m pip freeze > ~/ai/logs/python-packages-before-build.txt
+```
 
-# Configure ccache
+## configure ccache
+```
 mkdir -p ~/ai/cache/ccache
 export CCACHE_DIR="$HOME/ai/cache/ccache"
 export CCACHE_MAXSIZE=50G
 ccache --set-config=max_size=50G
 ccache --set-config=compression=true
 ccache --zero-stats
+```
 
-# Start the source build
+## Start the source build
+```
 python scripts/build_wheel.py --clean --build_type Release --use_ccache --cuda_architectures "120-real" --extra-cmake-vars "ENABLE_UCX=OFF" -j 24 2>&1 | tee ~/ai/logs/tensorrt-llm-build.log
+```
 
-### Various patches!!! to be documented
+# insert various patches!!! to be documented
 
 
-### After Build actions ###
+## after build actions ###
 
-# find and document build artefacts
+## find and document build artefacts
+```
 find . -type f \( -name 'tensorrt_llm-*.whl' -o -name '*.so' \) -printf '%TY-%Tm-%Td %TH:%TM  %p\n' | sort
 
 find ~/ai/src/TensorRT-LLM -type f -name 'tensorrt_llm-*.whl' -printf '%p\n'
-
-
+```
+```
 TRTLLM_WHEEL="$(
   find ~/ai/src/TensorRT-LLM \
     -type f \
@@ -223,40 +285,50 @@ TRTLLM_WHEEL="$(
 
 printf 'Wheel: %s\n' "$TRTLLM_WHEEL"
 test -f "$TRTLLM_WHEEL"
+```
 
-# save metadata
+## save metadata
+```
 mkdir -p ~/ai/artifacts/tensorrt-llm
 cp -av "$TRTLLM_WHEEL" ~/ai/artifacts/tensorrt-llm/
 sha256sum "$TRTLLM_WHEEL" | tee ~/ai/artifacts/tensorrt-llm/SHA256SUMS
+```
 
-# document repository state
+## document repository state
+```
 cd ~/ai/src/TensorRT-LLM
 git rev-parse HEAD | tee ~/ai/artifacts/tensorrt-llm/COMMIT
 git status --short | tee ~/ai/artifacts/tensorrt-llm/GIT_STATUS.txt
 git diff > ~/ai/artifacts/tensorrt-llm/local-build-fixes.patch
+```
 
-# document current Python state
+## document current Python state
+```
 python --version
 python -m pip --version
 python -m pip freeze > ~/ai/artifacts/tensorrt-llm/requirements-before-wheel.txt
-
+```
+```
 python - <<'PY'
 import sys
 
 print("Python executable:", sys.executable)
 print("Python version:", sys.version)
 PY
+```
 
-
-# Built Wheel test install without dependencies (--no-deps)
+## build wheel test install without dependencies (--no-deps)
+```
 python -m pip install --no-deps --force-reinstall "$TRTLLM_WHEEL"
 python -m pip show tensorrt-llm
 python -m pip freeze > ~/ai/artifacts/tensorrt-llm/requirements-after-wheel.txt
+```
 
-
-# Check dependency konsistenz
+## check dependency konsistenz
+```
 python -m pip check
-
+```
+```
 python - <<'PY'
 from importlib.metadata import PackageNotFoundError, version
 
@@ -266,9 +338,10 @@ for package in ("tensorrt-llm", "nvidia-modelopt", "torch", "tensorrt"):
     except PackageNotFoundError:
         print(f"{package}: nicht installiert")
 PY
+```
 
-
-# Import TensorRT-LLM
+## import TensorRT-LLM
+```
 python - <<'PY'
 import sys
 import tensorrt_llm
@@ -278,8 +351,10 @@ print("Python:", sys.version)
 print("TensorRT-LLM module:", tensorrt_llm.__file__)
 print("TensorRT-LLM version:", getattr(tensorrt_llm, "__version__", "unknown"))
 PY
+```
 
-# Check Torch CUDA Blackwell
+## check Torch CUDA Blackwell
+```
 python - <<'PY'
 import torch
 
@@ -297,7 +372,9 @@ if torch.cuda.is_available():
     print("Compute capability:", f"{properties.major}.{properties.minor}")
     print("VRAM GiB:", round(properties.total_memory / 1024**3, 2))
 PY
+```
 
+```
 python - <<'PY'
 import torch
 
@@ -316,8 +393,10 @@ print("Device:", c.device)
 print("Dtype:", c.dtype)
 print("Finite:", bool(torch.isfinite(c).all()))
 PY
+```
 
-# Check TensorRT Python bindings
+## check TensorRT Python bindings
+```
 python - <<'PY'
 import tensorrt as trt
 
@@ -329,8 +408,10 @@ builder = trt.Builder(logger)
 
 print("TensorRT Builder created:", builder is not None)
 PY
+```
 
-# Check native TensorRT-LLM libraries
+## check native TensorRT-LLM libraries
+```
 TRTLLM_PACKAGE_DIR="$(
   python - <<'PY'
 from pathlib import Path
@@ -339,11 +420,12 @@ import tensorrt_llm
 print(Path(tensorrt_llm.__file__).resolve().parent)
 PY
 )"
-
+```
+```
 echo "$TRTLLM_PACKAGE_DIR"
-
 find "$TRTLLM_PACKAGE_DIR" -type f -name '*.so' -print
-
+```
+```
 while IFS= read -r library; do
   echo
   echo "===== $library ====="
@@ -353,11 +435,13 @@ done < <(
     -type f \
     -name '*.so'
 )
-
+```
+```
 find "$TRTLLM_PACKAGE_DIR" -type f -name '*.so' -exec ldd {} \; | grep 'not found'
+```
 
-
-# Check TensorRT-LLM-CLI
+## check TensorRT-LLM-CLI
+```
 command -v trtllm-build || true
 command -v trtllm-serve || true
 command -v trtllm-bench || true
@@ -365,11 +449,13 @@ command -v trtllm-bench || true
 trtllm-build --help | head -40
 trtllm-serve --help | head -60
 trtllm-bench --help | head -60
+```
 
-
-# Create persistant TensorRT-LLM import test script
+## create persistant TensorRT-LLM import test script
+```
 mkdir -p ~/ai/scripts
-
+```
+```
 cat > ~/ai/scripts/validate_trtllm.py <<'PY'
 #!/usr/bin/env python3
 
@@ -461,26 +547,30 @@ def main() -> int:
 if __name__ == "__main__":
     raise SystemExit(main())
 PY
-
+```
+```
 chmod +x ~/ai/scripts/validate_trtllm.py
-
 source ~/ai/venv/tensorrt-llm/bin/activate
 ~/ai/scripts/validate_trtllm.py 2>&1 | tee ~/ai/artifacts/tensorrt-llm/validation.txt
+```
 
 
-
-# Save local patches
+## save local patches
+```
 cd ~/ai/src/TensorRT-LLM
 mkdir -p ~/ai/patches
 git diff > ~/ai/patches/tensorrt-llm-local-build-fixes.patch
-
+```
+```
 TORCH_LIST_HEADER="$HOME/ai/venv/tensorrt-llm/lib/python3.13/site-packages/torch/include/ATen/core/List_inl.h"
 diff -u "${TORCH_LIST_HEADER}.bak" "$TORCH_LIST_HEADER" > ~/ai/patches/pytorch-list-inl-nvcc13.patch || true
 ls -lh ~/ai/patches
 cat ~/ai/patches/pytorch-list-inl-nvcc13.patch
+```
 
 
-# Create Build report
+## create Build report
+```
 cat > ~/ai/artifacts/tensorrt-llm/BUILD_INFO.txt <<EOF
 TensorRT-LLM native build
 =========================
@@ -528,30 +618,38 @@ BUILD_DEEP_EP=ON
 BUILD_DEEP_GEMM=ON
 BUILD_FLASH_MLA=ON
 EOF
-
+```
+```
 cat ~/ai/artifacts/tensorrt-llm/BUILD_INFO.txt
+```
 
-
-# LAst checks
+## last checks
+```
 python -m pip check
+```
 
-# Fix missing dependencies
+## fix missing dependencies
+```
 python -m pip install --upgrade-strategy only-if-needed jupyter-server mistune notebook
 
 python -m pip install --upgrade --force-reinstall --no-deps "torchao>=0.14,<0.16" --index-url https://download.pytorch.org/whl/cu130
 
+```
 
-### TinyLlama-1.1B as working test
+# TinyLlama-1.1B as working test
 
-# activate and check venv
+## activate and check venv
+```
 source ~/ai/venv/tensorrt-llm/bin/activate
 cd /tmp
 python -m pip check
 command -v trtllm-serve
 command -v trtllm-build
 command -v trtllm-bench
+```
 
-# set HF cache
+## set HF cache
+```
 mkdir -p ~/ai/models/huggingface
 export HF_HOME=~/ai/models/huggingface
 export HUGGINGFACE_HUB_CACHE="$HF_HOME/hub"
@@ -559,9 +657,10 @@ cat >> ~/.bashrc <<'EOF'
 export HF_HOME="$HOME/ai/models/huggingface"
 export HUGGINGFACE_HUB_CACHE="$HF_HOME/hub"
 EOF
+```
 
-
-# check if Python api is present
+## check if Python api is present
+```
 python - <<'PY'
 from tensorrt_llm import LLM, SamplingParams
 
@@ -653,18 +752,22 @@ def main() -> int:
 if __name__ == "__main__":
     raise SystemExit(main())
 PY
-
+```
+```
 chmod +x ~/ai/scripts/test_tinyllama.py
-
 ~/ai/scripts/test_tinyllama.py 2>&1 | tee ~/ai/logs/tinyllama-first-run.log
+```
 
-# Download model
+## download model
+```
 python -m pip install --upgrade-strategy only-if-needed huggingface-hub
 mkdir -p ~/ai/models/TinyLlama-1.1B-Chat-v1.0
 hf download TinyLlama/TinyLlama-1.1B-Chat-v1.0 --local-dir ~/ai/models/TinyLlama-1.1B-Chat-v1.0
+```
 
 
-# persistant start script
+## persistant start script
+```
 cat > ~/ai/scripts/start-trtllm-tinyllama.sh <<'EOF'
 #!/usr/bin/env bash
 
@@ -693,11 +796,12 @@ exec trtllm-serve \
   --host 127.0.0.1 \
   --port 8000
 EOF
-
+```
+```
 chmod +x ~/ai/scripts/start-trtllm-tinyllama.sh
 
 ~/ai/scripts/start-trtllm-tinyllama.sh 2>&1 | tee ~/ai/logs/trtllm-serve-tinyllama.log
-
+```
 
 
 
