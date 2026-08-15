@@ -1,29 +1,26 @@
 # Debian 13.6 (trixie) minimal base system
 > A USB flash drive with a capacity of at least 2 GB is required.
 
-download Rufus 4.15 portable
+download `Rufus 4.15` portable
 ```
 https://github.com/pbatard/rufus/releases/download/v4.15/rufus-4.15p.exe
 ```
 
-download Debian 13.6 NetInstall iso
+download `Debian 13.6` NetInstall iso
 ```
 https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso
 ```
 
 run Rufus and prepare USB flash drive
-> Partition: GPT
+> Partition: `GPT`
 
-> Target: UEFI
+> Target: `UEFI`
 
-> Writemode: ISO-Image
+> Writemode: `ISO-Image`
 
 
 boot into boot manager
-> WS WRX90E-SAGE SE 
-```
-Press F8 during the boot process to select the boot device
-```
+> `WS WRX90E-SAGE SE` *Press F8 during the boot process to select the boot device*
 
 ## installing the base system on a NMVe drive
 Choose either Graphical install or install 
@@ -33,32 +30,32 @@ Choose either Graphical install or install
 ### configure lang settings 
 
 (in my case)
-> Language:         Deutsch
+> Language:         `Deutsch`
 
-> Location:         Deutschland
+> Location:         `Deutschland`
 
-> Locales:          de_DE.UTF-8
+> Locales:          `de_DE.UTF-8`
 
-> Keyboard:         Deutsch
+> Keyboard:         `Deutsch`
 
 ### configure Hostname
-Hostname
-> cgn-trp
+> Hostname
+`cgn-trp`
 
-Domain
-> local
+> Domain
+`local`
 
 
 ### create User
 Root User -> empty leads to the situation that the first created user is member of the sudo-group (safety)
 
-> New User
+> `New User`
 
-> Password
+> `Password`
 
 
 ### create Partitions
-> Partition Manager -> Manual
+> Partition Manager -> `Manual`
 
 select the correct drive -> e.g. SCSI8 (0,0,0) (sda) 1.0TB INTEL SS DSCKKW010X6
 
@@ -74,23 +71,24 @@ select the correct drive -> e.g. SCSI8 (0,0,0) (sda) 1.0TB INTEL SS DSCKKW010X6
 
 ### configure packet manager 
 (in my case)
-> Country: Germany
+> Country: `Germany`
 
-> Server: deb.debian.org
+> Server: `deb.debian.org`
 
-> Proxy: empty
+> Proxy: `empty`
 
 ### DPKG popularity-contest (telemetry)
-> no 
+> `no`
 
 ## Software selection
-> no GUI
+> `no GUI`
 
 Select only
-```
-[x] SSH server
-[x] standard system utilities
-```
+
+`[x] SSH server`
+
+`[x] standard system utilities`
+
 
 
 ## configure Bootloader
@@ -102,13 +100,10 @@ we need to do it manually to ensure that Grub is installed on the same drive
 
 An installation of GRUB on the wrong SSD for example, one containing an internal Windows installation, can be undone as follows:
 
-[**Undo Grub installation**](grub-setup.md#undo-grub-installation)
+[`Undo Grub installation`](grub-setup.md#undo-grub-installation)
 
 ## boot into the new system
-> WS WRX90E-SAGE SE 
-```
-Press F8 during the boot process to select the boot device
-```
+> `WS WRX90E-SAGE SE` *Press F8 during the boot process to select the boot device*
 
 ```
 cgn-trp login: <username>
@@ -122,30 +117,26 @@ sudo apt full-upgrade -y
 sudo reboot
 ```
 
-> WS WRX90E-SAGE SE 
-```
-Press F8 during the boot process to select the boot device
-```
-
+> `WS WRX90E-SAGE SE` *Press F8 during the boot process to select the boot device*
 
 
 ### check Debian version
 ```
 cat /etc/os-release
 ```
->> PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+`PRETTY_NAME="Debian GNU/Linux 13 (trixie)"`
 
 ### check kernel version
 ```
 uname -a
 ```
->> Linux cgn-trp 6.12.96+deb13-amd64
+`Linux cgn-trp 6.12.96+deb13-amd64`
 
 ### check arch
 ```
 dpkg --print-architecture
 ```
->> amd64
+`amd64`
 
 ### configure APT-Sources
 ```
@@ -165,7 +156,7 @@ sudo apt update
 ```
 lscpu | grep "Vendor ID"
 ```
->> AuthenticAMD
+`AuthenticAMD`
 
 ```
 sudo apt install -y amd64-microcode firmware-linux firmware-linux-nonfree
@@ -184,7 +175,7 @@ get the local IP address of the system
 ```
 hostname -I
 ```
->>192.168.0.238
+`192.168.0.238`
 
 now we can access our system via SSH from another computer.
 ```
@@ -226,10 +217,7 @@ sudo apt install -y nvidia-open
 ```
 sudo reboot
 ```
-> WS WRX90E-SAGE SE 
-```
-Press F8 during the boot process to select the boot device
-```
+> `WS WRX90E-SAGE SE` *Press F8 during the boot process to select the boot device*
 
 ```
 lsmod | grep nvidia
@@ -257,3 +245,5 @@ nvidia-smi
 nvcc --version
 ```
 
+> [!NOTE]
+> Zusätzliche Information.
