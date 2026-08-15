@@ -100,6 +100,9 @@ we need to do it manually to ensure that Grub is installed on the same drive
 
 **WIP:** add explanations regarding the installation
 
+An installation of GRUB on the wrong SSD for example, one containing an internal Windows installation, can be undone as follows:
+
+[**Undo Grub installation**](grub-setup.md#undo-grub-installation)
 
 ## boot into the new system
 > WS WRX90E-SAGE SE 
